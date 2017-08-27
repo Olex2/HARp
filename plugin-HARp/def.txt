@@ -2,4 +2,5 @@
   p_name = HARp
   p_htm = HARp
   p_img = [("HARp",'h1')]
+  p_img = [("HARp",'h1'), ("HARp_Extras", "h3")]
   p_scope = harp
