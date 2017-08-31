@@ -93,7 +93,7 @@ class HARp(PT):
 
   def launch(self):
     if not self.basis_list_str:
-      print("Could not locate usable HARt installation")
+      print("Could not locate usable HARt executable")
       return
     j = Job(self, olx.FileName())
     j.launch()
@@ -144,6 +144,7 @@ class HARp(PT):
       error = "--"
       if os.path.exists(self.jobs[i].error_fn):
         _ = os.stat(self.jobs[i].error_fn).st_size == 0
+        #TO DO: go through error file and look for the keyword ERROR, ignore Warnings and empty lines
         if _:
           error = "--"
         else:
@@ -183,9 +184,9 @@ class HARp(PT):
   
     regex_l = [
       (r'Labelled QQ plot\:\n\n(.*?)(?:\n\n|\Z)','QQ'),
-      (r'Scatter plot of F_z \= \(Fexp\-Fpred\)\/F_sigma vs sin\(theta\)\/lambda \:\n\n(.*?)(?:\n\n|\Z)','A1'),
-      (r'Scatter plot of Delta F \= \(Fexp\-Fpred\) vs sin\(theta\)\/lambda \:\n\n(.*?)(?:\n\n|\Z)','A2'),
-      (r'Scatter plot of F_z \= \(Fexp\-Fpred\)\/F_sigma vs Fexp \:\n\n(.*?)(?:\n\n|\Z)','A3'),
+      (r'Scatter plot of F_z \= \(Fexp\-Fpred\)\/F_sigma vs sin\(theta\)\/lambda \:\n\n(.*?)(?:\n\n|\Z)','Fz vs sin(theta)/lambda'),
+      (r'Scatter plot of Delta F \= \(Fexp\-Fpred\) vs sin\(theta\)\/lambda \:\n\n(.*?)(?:\n\n|\Z)','Delta Fz vs sin(theta)/lambda'),
+      (r'Scatter plot of F_z \= \(Fexp\-Fpred\)\/F_sigma vs Fexp \:\n\n(.*?)(?:\n\n|\Z)','Fz vs Fexp'),
     ]
   
   
@@ -289,9 +290,9 @@ def getAnalysisPlotData(input_f):
 
   regex_l = [
     (r'Labelled QQ plot\:\n\n(.*?)(?:\n\n|\Z)','QQ'),
-    (r'Scatter plot of F_z \= \(Fexp\-Fpred\)\/F_sigma vs sin\(theta\)\/lambda \:\n\n(.*?)(?:\n\n|\Z)','A1'),
-    (r'Scatter plot of Delta F \= \(Fexp\-Fpred\) vs sin\(theta\)\/lambda \:\n\n(.*?)(?:\n\n|\Z)','A2'),
-    (r'Scatter plot of F_z \= \(Fexp\-Fpred\)\/F_sigma vs Fexp \:\n\n(.*?)(?:\n\n|\Z)','A3'),
+    (r'Scatter plot of F_z \= \(Fexp\-Fpred\)\/F_sigma vs sin\(theta\)\/lambda \:\n\n(.*?)(?:\n\n|\Z)','Fz vs sin(theta)/lambda'),
+    (r'Scatter plot of Delta F \= \(Fexp\-Fpred\) vs sin\(theta\)\/lambda \:\n\n(.*?)(?:\n\n|\Z)','Delta Fz vs sin(theta)/lambda'),
+    (r'Scatter plot of F_z \= \(Fexp\-Fpred\)\/F_sigma vs Fexp \:\n\n(.*?)(?:\n\n|\Z)','Fz vs Fexp'),
   ]
 
 
@@ -396,7 +397,7 @@ class Job(object):
     if not os.path.exists(full_dir):
       return
     self.date = os.path.getctime(full_dir)
-    self.result_fn = os.path.join(full_dir, name) + ".cryst-asymm-unit.cif"
+    self.result_fn = os.path.join(full_dir, name) + ".cryst-fragment.cif"
     self.error_fn = os.path.join(full_dir, name) + ".err"
     self.out_fn = os.path.join(full_dir, name) + ".out"
     self.dump_fn = os.path.join(full_dir, "hart.exe.stackdump")
@@ -432,23 +433,29 @@ class Job(object):
   def launch(self):
     if olx.xf.latt.IsGrown() == 'true':
       if olx.Alert("Please confirm",\
-"""This is a grown structure. If you have created a cluster of molecules, make sure
-that the structure you see on the screen obeys the crystallographic symmetry.
-If this is not the case, the HAR will not work properly. Continue?""", "YN", False) == 'N':
-        return
+    """This is a grown structure. If you have created a cluster of molecules, make sure
+    that the structure you see on the screen obeys the crystallographic symmetry.
+    If this is not the case, the HAR will not work properly. Continue?""", "YN", False) == 'N':
+        return      
     elif olx.xf.au.GetZprime() != '1':
-      olx.Alert("Please confirm",\
-"""This is a  Z' < 1 structure. You have to complete all molecules before you run HARt.""",
-     "O", False)
-      return
-
+      olx.Grow()
+      olex.m("grow -w")
+    full_dir = self.parent.jobs_dir
     if os.path.exists(self.full_dir):
-      if olx.Alert("Please confirm",\
-"""This directory already exists. All data will be deleted. Continue?""", "YN", False) == 'N':
-        return
+      self.backup = os.path.join(full_dir, self.name, "backup")
+      i = 1
+      while (os.path.exists(self.backup + "_%d"%i)):
+        i = i + 1
+      self.backup = self.backup + "_%d"%i  
+      os.mkdir(self.backup)
       import shutil
       try:
-        shutil.rmtree(self.full_dir)
+        files = (file for file in os.listdir(os.path.join(full_dir, self.name))
+                 if os.path.isfile(os.path.join(full_dir, self.name, file)))
+        for f in files:
+          f_work = os.path.join(full_dir, self.name,f)
+          f_dist = os.path.join(self.backup,f)
+          shutil.move(f_work,f_dist)
       except:
         pass
     try:
@@ -467,7 +474,6 @@ If this is not the case, the HAR will not work properly. Continue?""", "YN", Fal
 
     model_file_name = os.path.join(self.parent.jobs_dir, self.name, self.name) + ".cif"
     olx.Kill("$Q")
-    #olx.Grow()
     olx.File(model_file_name)
 
     data_file_name = os.path.join(self.parent.jobs_dir, self.name, self.name) + ".hkl"

@@ -50,7 +50,7 @@
  SetVar(help_har_run_jobs,
    "
  Launch HAR jobs as a separate process. Olex2 can be closed and the
- process will continue to run. Please note, that HAR jobs can take a
+ process will continue to run. Please note, that HAR jobs can take a 
  **very** long time -- from a few **hours** to a few **weeks**!
    ")
  $-
@@ -96,11 +96,11 @@
 <!-- #include tool-top gui\blocks\tool-top.htm;image=#image;onclick=#onclick;1; -->
 
 <!-- #include tool-row-help gui\blocks\tool-row-help.htm;name='HAR_HEADER';help_ext=HAR Refinement;helpTxt=$GetVar(help_har_headline);1; -->
-<td><font size="+1"><b>Tonto HAR Refinement Interface</b></font></td>
+<td><font size="+1"><b>Tonto HAR Interface</b></font></td>
 <!-- #include row_table_off gui\blocks\row_table_off.htm;1; -->
 
 
-<!-- #include tool-row-help gui\blocks\tool-row-help.htm;name='HAR_HEADER';help_ext=HAR Basis Sets adn Method;helpTxt=$GetVar(help_har_basis_method);1; -->
+<!-- #include tool-row-help gui\blocks\tool-row-help.htm;name='HAR_HEADER';help_ext=HAR Basis Sets and Method;helpTxt=$GetVar(help_har_basis_method);1; -->
    <td width="20%">
        Basis
      </td>
@@ -180,8 +180,22 @@
 
 <!-- #include tool-row-help gui\blocks\tool-row-help.htm;name='HAR_HEADER';help_ext=Running HAR Jobs;helpTxt=$GetVar(help_har_run_jobs);1; -->
 
-
-
+     <td width="33%" >$+
+       html.Snippet("gui/snippets/input-combo", "name=har_version",
+        "items='hart.exe'",
+        "value='hart.exe'")
+     $-</td>
+     <td width="33%" >$+
+       html.Snippet("gui/snippets/input-button", "name=update_info",
+        "value=Check Output NOW",
+        "onclick=html.Update")
+     $-</td>
+     <td width="33%" >$+
+       html.Snippet("gui/snippets/input-button", "name=tonto_har_run",
+        "value=Launch",
+        "onclick=spy.tonto.HAR.launch()")
+     $-</td>
+     
      <td width="20%" align='left'>
        <!--Check out every-->
      </td>
@@ -196,17 +210,6 @@
      <td width="10%" align='right'>
        <!--seconds-->
      </td>
-
-     <td width="33%" >$+
-       html.Snippet("gui/snippets/input-button", "name=update_info",
-        "value=Check Output NOW",
-        "onclick=html.Update")
-     $-</td>
-     <td width="33%" >$+
-       html.Snippet("gui/snippets/input-button", "name=tonto_har_run",
-        "value=Launch",
-        "onclick=spy.tonto.HAR.launch()")
-     $-</td>
 <!-- #include row_table_off gui\blocks\row_table_off.htm;1; -->
 
 
