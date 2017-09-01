@@ -403,21 +403,19 @@ class Job(object):
     self.dump_fn = os.path.join(full_dir, "hart.exe.stackdump")
     self.analysis_fn = os.path.join(full_dir, "stdout.fit_analysis")
     self.completed = os.path.exists(self.result_fn)
-    self.full_dir = full_dir
     initialised = False
 
   def save(self):
-    with open(os.path.join(self.parent.jobs_dir, self.name, "job.options"), "w") as f:
+    with open(os.path.join(self.full_dir, "job.options"), "w") as f:
       for k, v in HARt.options.iteritems():
         val = olx.GetVar(k, None)
         if val is not None:
           f.write("%s: %s\n" %(k, val))
 
   def load(self):
-    full_dir = os.pardir.join(parent.jobs_dir, self.name)
-    options_fn = os.path.join(full_dir, "job.options")
+    options_fn = os.path.join(self.full_dir, "job.options")
     if os.path.exists(options_fn):
-      self.date = os.path.getctime(full_dir)
+      self.date = os.path.getctime(self.full_dir)
       try:
         with open(options_fn, "r") as f:
           for l in f:
@@ -431,6 +429,7 @@ class Job(object):
     return False
 
   def launch(self):
+    olex.m("refine")
     if olx.xf.latt.IsGrown() == 'true':
       if olx.Alert("Please confirm",\
     """This is a grown structure. If you have created a cluster of molecules, make sure
@@ -440,9 +439,8 @@ class Job(object):
     elif olx.xf.au.GetZprime() != '1':
       olx.Grow()
       olex.m("grow -w")
-    full_dir = self.parent.jobs_dir
     if os.path.exists(self.full_dir):
-      self.backup = os.path.join(full_dir, self.name, "backup")
+      self.backup = os.path.join(self.full_dir, "backup")
       i = 1
       while (os.path.exists(self.backup + "_%d"%i)):
         i = i + 1
@@ -450,10 +448,10 @@ class Job(object):
       os.mkdir(self.backup)
       import shutil
       try:
-        files = (file for file in os.listdir(os.path.join(full_dir, self.name))
-                 if os.path.isfile(os.path.join(full_dir, self.name, file)))
+        files = (file for file in os.listdir(os.path.join(self.full_dir))
+                 if os.path.isfile(os.path.join(self.full_dir, file)))
         for f in files:
-          f_work = os.path.join(full_dir, self.name,f)
+          f_work = os.path.join(self.full_dir,f)
           f_dist = os.path.join(self.backup,f)
           shutil.move(f_work,f_dist)
       except:
@@ -472,11 +470,11 @@ class Job(object):
         tries += 1
         pass
 
-    model_file_name = os.path.join(self.parent.jobs_dir, self.name, self.name) + ".cif"
+    model_file_name = os.path.join(self.full_dir, self.name) + ".cif"
     olx.Kill("$Q")
     olx.File(model_file_name)
 
-    data_file_name = os.path.join(self.parent.jobs_dir, self.name, self.name) + ".hkl"
+    data_file_name = os.path.join(self.full_dir, self.name) + ".hkl"
     if not os.path.exists(data_file_name):
       from cctbx_olex_adapter import OlexCctbxAdapter
       from iotbx.shelx import hklf
