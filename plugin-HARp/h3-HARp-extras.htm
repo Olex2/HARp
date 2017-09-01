@@ -1,9 +1,43 @@
+
+ 
+ $+
+ SetVar(help_map_tool,
+   "
+ These options can be used to make basic maps to analyse the results. 
+ For advanced Map options use the Maps Tool.
+ <br>
+ ~Type~
+ Select the Type of map you want to see: Residual density, Fcalc, 
+ Fobs or Defomartion Density (HAR-IAM)
+ 
+ ~Isovalue~
+ Select the isovalue for the selected map. Try different values to see 
+ different features fo your model and experiment. Also consider clicking
+ Analysis-link after your HAR for statistics on your refinement.
+   ")
+ $-
+
 <!-- #include tool-h3 gui\blocks\tool-h3.htm;image=#image;colspan=1;1; -->
 
-<!-- #include tool-row-help gui\blocks\tool-row-help.htm;name='HAR_HEADER';help_ext=HAR Refinement;helpTxt=$GetVar(help_har_headline);1; -->
-<td><font size="+1"><b>Here will be map and grow tools</b></font></td>
+<!-- #include tool-row-help gui\blocks\tool-row-help.htm;name='MAP_HEADER';help_ext=map-header;1 -->
+
+$spy.gui.maps.SetXgridView()
+<!-- #include xgrid gui\snippets\snippet-xgrid.htm;suffix=maps;1; -->
 <!-- #include row_table_off gui\blocks\row_table_off.htm;1; -->
 
+<!-- #ignoreif or(strcmp(xgrid.RenderMode(),'contour'),strcmp(xgrid.RenderMode(),'contour+plane'),strcmp(xgrid.RenderMode(),'plane'))
+<tr bgcolor="$GetVar(HtmlTableBgColour)">
+<!-- #include xgrid gui\snippets\snippet-3D-xgrid.htm;1; -->
+#ignoreif -->
+
+<!-- #ignoreif not(or(strcmp(xgrid.RenderMode(),'contour'),strcmp(xgrid.RenderMode(),'contour+plane'),strcmp(xgrid.RenderMode(),'plane')))
+<tr bgcolor="$GetVar(HtmlTableBgColour)">
+<!-- #include xgrid gui\snippets\snippet-2D-xgrid.htm;1; -->
+#ignoreif -->
+
+<!-- #includeif file.Exists(HKLSrc()) h3-electron-density gui\h3-electron-density.htm;gui\blocks\tool-h3-off.htm;image=h3-Electron-Density;onclick="";2; -->
+
+<!-- #include h3-growing gui\h3-growing.htm;gui\blocks\tool-h3-off.htm;image=h3-Growing;onclick="";2; -->
 
 <!-- #include row_table_off gui\blocks\row_table_off.htm;1; -->
 
