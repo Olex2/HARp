@@ -363,7 +363,7 @@ def makePlotlyGraph(d):
     data.append(_)
 
     layout = go.Layout(
-        title='HAR Result',
+        title='HAR Statistics',
         xaxis=dict(
             title='x Axis',
             titlefont=dict(
@@ -397,7 +397,7 @@ class Job(object):
     if not os.path.exists(full_dir):
       return
     self.date = os.path.getctime(full_dir)
-    self.result_fn = os.path.join(full_dir, name) + ".cryst-fragment.cif"
+    self.result_fn = os.path.join(full_dir, name) + ".archive.cif"
     self.error_fn = os.path.join(full_dir, name) + ".err"
     self.out_fn = os.path.join(full_dir, name) + ".out"
     self.dump_fn = os.path.join(full_dir, "hart.exe.stackdump")
@@ -489,7 +489,7 @@ class Job(object):
         f_sq_obs.export_as_shelx_hklf(out, normalise_if_format_overflow=True)
     self.save()
 
-    args = [self.parent.exe, self.name+".cif", "-cif1", "t",
+    args = [self.parent.exe, self.name+".cif",
             "-basis-dir", self.parent.basis_dir,
              "-shelx-f2", self.name+".hkl"]
 
@@ -526,12 +526,18 @@ class Job(object):
           args.append("-h-adps")
           args.append("f")
         elif val == 'positions+Uiso':
+          args.append("-h-adps")
+          args.append("f")          
           args.append("-h-iso")
           args.append("t")
         elif val == "positions+Uaniso":
           args.append("-h-adps")
           args.append("t")
         elif val == "leave_alone":
+          args.append("-h-adps")
+          args.append("f")
+          args.append("-h-iso")
+          args.append("f")          
           args.append("-h-pos")
           args.append("f")
         pass
