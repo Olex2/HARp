@@ -9,9 +9,9 @@
  Jayatilaka at the University of Western Australia in Perth in
  conjunction with Prof. Simon Grabowsky at the University of Bremen. <br>
  ~Literature~<br>
- -- (Jayatilaka & Dittrich., Acta Cryst. 2008, A64, 383)<br>
- -- (Capelli et al., IUCrJ. 2014, 1, 361)<br>
- -- (Fugel et al., IUCrJ. 2017, accepted)
+ -- (Jayatilaka & Dittrich. Acta Cryst. 2008; A64)<br>
+ -- (Capelli et al. IUCrJ. 2014; 1)<br>
+ -- (Fugel et al. IUCrJ. 2017; in review)
    ")
  $-
  $+
@@ -143,18 +143,24 @@
 
 <!-- #include tool-row-help gui\blocks\tool-row-help.htm;name='HAR_HYDROGEN';help_ext=Hydrogen Treatment;helpTxt=$GetVar(help_har_hydrogen);1; -->
   <td width="20%">Refine Hydrogen</td>
-  <td width="30%">$+
+  <td width="25%">$+
     html.Snippet("gui/snippets/input-combo", "name=tonto_har_h_refinement",
       "items='positions only;positions+Uiso;positions+Uaniso;leave_alone'",
       "value=GetVar('settings.tonto.HAR.hydrogens')",
       "onchange=SetVar('settings.tonto.HAR.hydrogens', html.GetValue('~name~'))")
    $-</td>
 
-   <td width="20%" align="right"> Use dispersion  </td>
-   <td width="30%">$+
+   <td width="18%" align="right"> Use dispersion  </td>
+   <td width="5%">$+
      html.Snippet("gui/snippets/input-checkbox", "name=tonto_har_dispersion",
       "checked=GetVar('settings.tonto.HAR.dispersion')",
       "onclick=SetVar('settings.tonto.HAR.dispersion', html.GetState('~name~'))")
+   $-</td>
+   <td width="15%" align="right"> Auto-Refine  </td>
+   <td width="5%">$+
+     html.Snippet("gui/snippets/input-checkbox", "name=auto_refine",
+      "checked=GetVar('settings.tonto.HAR.autorefine')",
+      "onclick=SetVar('settings.tonto.HAR.autorefine', html.GetState('~name~'))")
    $-</td>
 <!-- #include row_table_off gui\blocks\row_table_off.htm;1; -->
 
