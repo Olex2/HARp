@@ -431,7 +431,7 @@ class Job(object):
 
   def launch(self):
     autorefine = olx.GetVar("settings.tonto.HAR.autorefine", None)
-    if autrefine == 'true':
+    if autorefine == 'true':
       olex.m("refine")
     if olx.xf.latt.IsGrown() == 'true':
       if olx.Alert("Please confirm",\
