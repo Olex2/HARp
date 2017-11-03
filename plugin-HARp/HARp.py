@@ -9,9 +9,11 @@ import olex
 import olx
 import gui
 
+
 import time
 debug = bool(OV.GetParam("olex2.debug", False))
 
+get_template = gui.tools.TemplateProvider.get_template
 
 instance_path = OV.DataDir()
 
@@ -39,6 +41,9 @@ OV.SetVar('HARp_plugin_path', p_path)
 
 from PluginTools import PluginTools as PT
 
+from gui.images import GuiImages
+GI=GuiImages()
+
 class HARp(PT):
 
   def __init__(self):
@@ -64,7 +69,7 @@ class HARp(PT):
       "settings.tonto.HAR.dispersion": ("false",),
     }
     self.options = options
-  
+
     self.jobs_dir = os.path.join(olx.DataDir(), "jobs")
     if not os.path.exists(self.jobs_dir):
       os.mkdir(self.jobs_dir)
@@ -104,6 +109,7 @@ class HARp(PT):
     return self.basis_list_str
 
   def list_jobs(self):
+    d = {}
     self.jobs = []
     for j in os.listdir(self.jobs_dir):
       fp  = os.path.join(self.jobs_dir, j)
@@ -111,16 +117,7 @@ class HARp(PT):
       if os.path.isdir(fp) and os.path.exists(jof):
         self.jobs.append(Job(self, j))
     sorted(self.jobs, key=lambda s: s.date)
-    rv = "<b>Recent jobs</b> (<a href=\"spy.tonto.HAR.view_all()\">View all jobs</a>)<br>"
-    rv += '''
-    <table>
-      <tr>
-        <th width='30%' align='left'>Job name</th>
-        <th width='19%' align='left'>Time</th>
-        <th width='14%' align='center'>Status</th>
-        <th width='12%' align='center'>ERR</th>
-        <th width='12%' align='center'>DUMP</th>
-        <th width='14%' align='center'>Analysis</th></tr>'''
+    rv = get_template('table_header', path=p_path)
 
     status_running = "<font color='%s'><b>Running</b></font>" %OV.GetParam('gui.orange')
     status_completed = "<font color='%s'><b>Finished</b></font>" %OV.GetParam('gui.green')
@@ -162,14 +159,26 @@ class HARp(PT):
           self.jobs[i].analysis_fn, self.jobs[i].analysis_fn)
         status = "<a target='Open .out file' href='exec -o getvar(defeditor) %s'>%s</a>" %(self.jobs[i].out_fn, status_completed)
 
-      ct = time.strftime("%b %d %H:%M", time.localtime(self.jobs[i].date))
+
+      d['job_result_filename'] = self.jobs[i].result_fn
+      d['job_result_name'] = self.jobs[i].name
+      d['ct'] = time.strftime("%b %d %H:%M", time.localtime(self.jobs[i].date))
+      d['status'] = status
+      d['error'] = error
+      d['dump'] = dump
+      d['analysis'] = analysis
+      del_file = os.path.dirname(d['job_result_filename'])
+      d['delete'] = del_button = GI.get_action_button_html('delete', "spy.tonto.har.del_dir(%s)>>html.Update"%del_file, "Delete this HAR refinement")
 
       if os.path.exists(self.jobs[i].result_fn):
-        rv += "<tr><td><a href='reap \"%s\"'>%s</a></td><td>%s</td><td align='center'>%s</td><td align='center'>%s</td><td align='center'>%s</td><td align='center'>%s</td></tr>" %(self.jobs[i].result_fn, self.jobs[i].name, ct, status, error, dump, analysis)
+        d['link'] = "<a href='reap \"%(job_result_filename)s\"'>" %d
       else:
-        rv += "<tr><td>%s</td><td>%s</td><td align='center'>%s</td><td align='center'>%s</td><td align='center'>%s</td><td align='center'>%s</td></tr>" %(self.jobs[i].name, ct, status, error, dump, analysis)
+        d['link'] = ""
 
-    return rv + "</table>"
+      rv += get_template('job_line')%d
+    rv += "</table>"
+    rv += get_template('recent_jobs', path=p_path)
+    return rv
 
   def view_all(self):
     olx.Shell(self.jobs_dir)
@@ -181,15 +190,15 @@ class HARp(PT):
     f = open(input_f, 'r').read()
     d = {}
     import re
-  
+
     regex_l = [
       (r'Labelled QQ plot\:\n\n(.*?)(?:\n\n|\Z)','QQ'),
       (r'Scatter plot of F_z \= \(Fexp\-Fpred\)\/F_sigma vs sin\(theta\)\/lambda \:\n\n(.*?)(?:\n\n|\Z)','Fz vs sin(theta)/lambda'),
       (r'Scatter plot of Delta F \= \(Fexp\-Fpred\) vs sin\(theta\)\/lambda \:\n\n(.*?)(?:\n\n|\Z)','Delta Fz vs sin(theta)/lambda'),
       (r'Scatter plot of F_z \= \(Fexp\-Fpred\)\/F_sigma vs Fexp \:\n\n(.*?)(?:\n\n|\Z)','Fz vs Fexp'),
     ]
-  
-  
+
+
     for regex_t,name in regex_l:
       regex = re.compile(regex_t, re.DOTALL)
       xs = []
@@ -225,14 +234,14 @@ class HARp(PT):
         d[name].setdefault('text', text)
       else:
         print "Could not evaluate REGEX %s." %repr(regex_t)
-  
-  
+
+
     makePlotlyGraph(d)
-  
-  
-  
+
+
+
   def makePlotlyGraph(d):
-  
+
     try:
       import plotly
       print plotly.__version__  # version >1.9.4 required
@@ -243,7 +252,7 @@ class HARp(PT):
     except:
       print "Please install plot.ly for python!"
       return
-  
+
     data = []
     print len(d)
     for trace in d:
@@ -255,7 +264,7 @@ class HARp(PT):
         name = d[trace]['title']
         )
       data.append(_)
-  
+
       layout = go.Layout(
           title='HAR Result',
           xaxis=dict(
@@ -275,8 +284,8 @@ class HARp(PT):
               )
           )
       )
-  
-  
+
+
     fig = go.Figure(data=data, layout=layout)
     plot_url = plotly.offline.plot(fig, filename='basic-line')
 
@@ -407,7 +416,7 @@ class Job(object):
 
   def save(self):
     with open(os.path.join(self.full_dir, "job.options"), "w") as f:
-      for k, v in HARt.options.iteritems():
+      for k, v in HARp_instance.options.iteritems():
         val = olx.GetVar(k, None)
         if val is not None:
           f.write("%s: %s\n" %(k, val))
@@ -435,7 +444,7 @@ class Job(object):
     """This is a grown structure. If you have created a cluster of molecules, make sure
     that the structure you see on the screen obeys the crystallographic symmetry.
     If this is not the case, the HAR will not work properly. Continue?""", "YN", False) == 'N':
-        return      
+        return
     elif olx.xf.au.GetZprime() != '1':
       olx.Grow()
       olex.m("grow -w")
@@ -444,7 +453,7 @@ class Job(object):
       i = 1
       while (os.path.exists(self.backup + "_%d"%i)):
         i = i + 1
-      self.backup = self.backup + "_%d"%i  
+      self.backup = self.backup + "_%d"%i
       os.mkdir(self.backup)
       import shutil
       try:
@@ -515,7 +524,7 @@ class Job(object):
       args.append("-dispersion")
       args.append('%s' %disp_arg)
 
-    for k,v in HARt.options.iteritems():
+    for k,v in HARp_instance.options.iteritems():
       val = olx.GetVar(k, None)
       if len(v) == 2:
         if val is not None:
@@ -527,7 +536,7 @@ class Job(object):
           args.append("f")
         elif val == 'positions+Uiso':
           args.append("-h-adps")
-          args.append("f")          
+          args.append("f")
           args.append("-h-iso")
           args.append("t")
         elif val == "positions+Uaniso":
@@ -537,7 +546,7 @@ class Job(object):
           args.append("-h-adps")
           args.append("f")
           args.append("-h-iso")
-          args.append("f")          
+          args.append("f")
           args.append("-h-pos")
           args.append("f")
         pass
@@ -554,6 +563,11 @@ class Job(object):
            os.path.join(olx.BaseDir(), "util", "pyUtil", "PyToolLib", "HARt-launch.py")])
 
 
+def del_dir(directory):
+  import shutil
+  shutil.rmtree(directory)
+
+
 HARp_instance = HARp()
 OV.registerFunction(HARp_instance.available, False, "tonto.HAR")
 OV.registerFunction(HARp_instance.list_jobs, False, "tonto.HAR")
@@ -562,4 +576,5 @@ OV.registerFunction(HARp_instance.launch, False, "tonto.HAR")
 OV.registerFunction(HARp_instance.getBasisListStr, False, "tonto.HAR")
 OV.registerFunction(getAnalysisPlotData, False, "tonto.HAR")
 OV.registerFunction(makePlotlyGraph, False, "tonto.HAR")
+OV.registerFunction(del_dir, False, "tonto.HAR")
 print "OK."

@@ -36,8 +36,8 @@
  $+
  SetVar(help_har_hydrogen,
    "
- This option specifies how hydrogen atoms are treated in HAR. Hydrogens 
- can be refined anisotropically, isotropically, only positions, or kept 
+ This option specifies how hydrogen atoms are treated in HAR. Hydrogens
+ can be refined anisotropically, isotropically, only positions, or kept
  fixed.
    ")
  $-
@@ -47,12 +47,12 @@
  SetVar(help_har_cluster_significance,
    "
  ~Cluster Radius~
- Defines a radius around the asymmetric unit, in which implicit point 
- charges and dipoles are used to mimmic the crystal effect. Minimal HAR 
+ Defines a radius around the asymmetric unit, in which implicit point
+ charges and dipoles are used to mimmic the crystal effect. Minimal HAR
  is 0, reasonable values go to 8 Angstrom.
- 
+
  ~I/sig threshold~
- Defines the significance criteria for data to be used in teh refinement. 
+ Defines the significance criteria for data to be used in teh refinement.
  Default value is 3, should not be too big.
    ")
  $-
@@ -63,7 +63,7 @@
  SetVar(help_har_run_jobs,
    "
  Launch HAR jobs as a separate process. Olex2 can be closed and the
- process will continue to run. Please note, that HAR jobs can take a 
+ process will continue to run. Please note, that HAR jobs can take a
  **very** long time -- from a few **hours** to a few **weeks**!
    ")
  $-
@@ -107,7 +107,7 @@
  $+
  SetVar(HARp_Tools_help,
    "
- These tools can be used to grow the structure before running the calculation 
+ These tools can be used to grow the structure before running the calculation
  or see maps after the refinement.
    ")
  $-
@@ -200,38 +200,49 @@
 
 <!-- #include tool-row-help gui\blocks\tool-row-help.htm;name='HAR_HEADER';help_ext=Running HAR Jobs;helpTxt=$GetVar(help_har_run_jobs);1; -->
 
-      <td width="33%" >$+
-       html.Snippet("gui/snippets/input-button", "name=update_info",
+      <td width="33%" >
+      $+
+        html.Snippet("gui/snippets/input-button",
+        "name=update_info",
         "value=Check Output NOW",
-        "onclick=html.Update")
-     $-</td>
-     <td width="33%" >$+
-       html.Snippet("gui/snippets/input-button", "name=tonto_har_run",
-        "value=Launch",
-        "onclick=spy.tonto.HAR.launch()")
-     $-</td>
-     
+        "onclick=html.Update"
+        )
+      $-
+      </td>
+
      <td width="20%" align='left'>
-       <!--Check out every-->
+       Check out every
      </td>
 
      <td width="8%" >
-     <!--$+-->
-       <!--html.Snippet("gui/snippets/input-text", "name=checking_interval",-->
-        <!--"value=0",-->
-        <!--"onchange=SetVar(check_output_interval, html.GetValue('~name~'))")-->
-      <!--$--->
+     $+
+       html.Snippet("gui/snippets/input-text", "name=checking_interval",
+        "value=0",
+        "onchange=SetVar(check_output_interval, html.GetValue('~name~'))")
+      $-
      </td>
      <td width="10%" align='right'>
-       <!--seconds-->
+       seconds
+     </td>
+
+      <td width="33%" >
+      $+
+        html.Snippet("gui/snippets/input-button",
+        "name=tonto_har_run",
+        "value=Launch",
+        "onclick=spy.tonto.HAR.launch()"
+        )
+     $-
      </td>
 <!-- #include row_table_off gui\blocks\row_table_off.htm;1; -->
 
+<tr name='#name' bgcolor="GetVar(HtmlTableFirstcolColour)">
+<!-- #include tool-help-first-column gui\blocks\tool-help-first-column.htm;help_ext=#help_ext;scope=#scope;helpTxt=#helpTxt;1; -->
 
-<!-- #include tool-row-help gui\blocks\tool-row-help.htm;name='HAR_JOBS';help_ext=HAR Jobs;helpTxt=$GetVar(help_har_jobs);1; -->
+<!-- #include row_table_on gui\blocks\row_table_on.htm;1; -->
 $spy.tonto.HAR.list_jobs()
 <!-- #include row_table_off gui\blocks\row_table_off.htm;1; -->
 
 <!-- #include h3-harp-extras $GetVar(HARp_plugin_path)\h3-HARp-extras.htm;gui\blocks\tool-h3-off.htm;image=h3-HARp_extras;helpTxt=$GetVar(HARp_Tools_help);onclick=;colspan=1;2; -->
 
-<!-- #include tool-footer gui\blocks\tool-footer.htm;colspan=2;1; -->
+<!-- #include tool-footer gui\blocks\tool-footer.htm;colspan=1;1; -->
