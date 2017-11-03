@@ -67,6 +67,7 @@ class HARp(PT):
       "settings.tonto.HAR.cluster.radius": ("0", "cluster-radius"),
       "settings.tonto.HAR.intensity_threshold.value": ("3", "fos"),
       "settings.tonto.HAR.dispersion": ("false",),
+      "settings.tonto.HAR.autorefine": ("true",),
     }
     self.options = options
 
@@ -438,7 +439,9 @@ class Job(object):
     return False
 
   def launch(self):
-    olex.m("refine")
+    autorefine = olx.GetVar("settings.tonto.HAR.autorefine", None)
+    if autorefine == 'true':
+      olex.m("refine")
     if olx.xf.latt.IsGrown() == 'true':
       if olx.Alert("Please confirm",\
     """This is a grown structure. If you have created a cluster of molecules, make sure

@@ -151,10 +151,16 @@
    $-</td>
 
    <td width="20%" align="right"> Use dispersion  </td>
-   <td width="30%">$+
+   <td width="5%">$+
      html.Snippet("gui/snippets/input-checkbox", "name=tonto_har_dispersion",
       "checked=GetVar('settings.tonto.HAR.dispersion')",
       "onclick=SetVar('settings.tonto.HAR.dispersion', html.GetState('~name~'))")
+   $-</td>
+   <td width="20%" align="right"> Auto-Refine  </td>
+   <td width="5%">$+
+     html.Snippet("gui/snippets/input-checkbox", "name=auto_refine",
+      "checked=GetVar('settings.tonto.HAR.autorefine')",
+      "onclick=SetVar('settings.tonto.HAR.autorefine', html.GetState('~name~'))")
    $-</td>
 <!-- #include row_table_off gui\blocks\row_table_off.htm;1; -->
 
