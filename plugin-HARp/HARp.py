@@ -123,7 +123,9 @@ class HARp(PT):
 
 #    status_running = "<font color='%s'><b>Running</b></font>" %OV.GetParam('gui.orange')
     d['processing_gif_src'] = os.sep.join([self.p_path, OV.GetParam('harp.processing_gif')])
-    status_running  = get_template('processing_gif')%d
+    status_running = get_template('processing_gif')%d
+    d['back_picture_src'] = os.sep.join([self.p_path, OV.GetParam('harp.back_arrow')])
+    load_input = "<table cellspacing='1' cellpadding='0' width='100%%'><tr><td align='center'><img src='%(back_picture_src)s', width='45%%'></td></tr></table>"%d
 
     status_completed = "<font color='%s'><b>Finished</b></font>" %OV.GetParam('gui.green')
     status_error = "<font color='%s'><b>Error!</b></font>" %OV.GetParam('gui.red')
@@ -154,11 +156,8 @@ class HARp(PT):
         else:
           error = "<a target='Open .err file' href='exec -o getvar(defeditor) %s'>ERR</a>" %self.jobs[i].error_fn
           status = "<a target='Open .out file' href='exec -o getvar(defeditor) %s'>%s</a>" %(self.jobs[i].out_fn, status_error)
-
-      dump = "--"
-      if os.path.exists(self.jobs[i].dump_fn):
-        dump = "<a target='Open .dump file' href='exec -o getvar(defeditor) %s'>DUMP</a>" %self.jobs[i].dump_fn
-        status = "<a target='Open .out file' href='exec -o getvar(defeditor) %s'>%s</a>" %(self.jobs[i].out_fn, status_error)
+      input_cif = os.path.join(self.jobs[i].full_dir, self.jobs[i].name + ".cif")
+      arrow = "<a target='Open input .cif file' href='reap %s'>%s</a>" %(input_cif, load_input)
 
       analysis = "--"
       if os.path.exists(self.jobs[i].analysis_fn):
@@ -172,7 +171,7 @@ class HARp(PT):
       d['ct'] = time.strftime("%b %d %H:%M", time.localtime(self.jobs[i].date))
       d['status'] = status
       d['error'] = error
-      d['dump'] = dump
+      d['arrow'] = arrow
       d['analysis'] = analysis
       del_file = os.path.dirname(d['job_result_filename'])
       d['delete'] = del_button = GI.get_action_button_html('delete', "spy.tonto.har.del_dir(%s)>>html.Update"%del_file, "Delete this HAR refinement")

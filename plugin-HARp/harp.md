@@ -53,8 +53,8 @@ Olex2 tries to 'guess' the status of the job from the files it finds in the fold
 ## Error
 If the HAR refinement produces an error file, a link to this file will appear.
 
-## Dump
-If HAR crashes, and link to the dump file of the HAR process will appear.
+## Input
+If you want to compare input and output geometry click this button to open the input CIF file used for teh refinement.
 
 ## Analysis
 This opens the result output file of the HAR refinement. If the plotly extension is installed, graphs of e.g. the QQ Plot, agreement statustics etc. contained in these files will be generated and shown in the browser.

@@ -12,5 +12,7 @@ harp{
     .type = int
   processing_gif = giphy.gif
     .type = str
+  back_arrow = back.png
+    .type = str
     
 }
