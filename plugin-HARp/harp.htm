@@ -1,126 +1,11 @@
- $+
- SetVar(help_har_headline,
-   "
- The <b>H</b>irshfeld <b>A</b>tom <b>R</b>efinement employs aspherical
- atomic scattering factors calculated from a theoretical density. This
- approach allows for an accurate localization of hydrogen atoms, an
- accurate determination of non-hydrogen ADPs and an anisotropic
- refinement of hydrogen atoms. It is being developed by Prof. Dylan
- Jayatilaka at the University of Western Australia in Perth in
- conjunction with Prof. Simon Grabowsky at the University of Bremen. <br>
- ~Literature~<br>
- -- (Jayatilaka & Dittrich., Acta Cryst. 2008, A64, 383)<br>
- -- (Capelli et al., IUCrJ. 2014, 1, 361)<br>
- -- (Fugel et al., IUCrJ. 2017, accepted)
-   ")
- $-
- $+
- SetVar(help_har_basis_method,
-   "
- ~Basis~
- This specifies the basis set for the calculation of the theoretical
- density. The default basis set is **def2-SVP**. **STO-3G** is
- recommended only for test purposes.
-
-
- ~Method~
- The default method used for the calculation of the theoretical density
- is **Restricted Hartee-Fock**. **Restricted Kohn-Sham** may be
- superior in some cases (especially for the treatment of hydrogen
- atoms), but tends to be unstable in some cases.
-   ")
- $-
-
-
-
- $+
- SetVar(help_har_hydrogen,
-   "
- This option specifies how hydrogen atoms are treated in HAR. Hydrogens
- can be refined anisotropically, isotropically, only positions, or kept
- fixed.
-   ")
- $-
-
-
- $+
- SetVar(help_har_cluster_significance,
-   "
- ~Cluster Radius~
- Defines a radius around the asymmetric unit, in which implicit point
- charges and dipoles are used to mimmic the crystal effect. Minimal HAR
- is 0, reasonable values go to 8 Angstrom.
-
- ~I/sig threshold~
- Defines the significance criteria for data to be used in teh refinement.
- Default value is 3, should not be too big.
-   ")
- $-
-
-
-
- $+
- SetVar(help_har_run_jobs,
-   "
- Launch HAR jobs as a separate process. Olex2 can be closed and the
- process will continue to run. Please note, that HAR jobs can take a
- **very** long time -- from a few **hours** to a few **weeks**!
-   ")
- $-
-
-
-
-
- $+
- SetVar(help_har_jobs,
-   "
- HAR refinements are run as 'jobs': they are submitted to the system as
- an independent process. At the moment, Olex2 does not automatically
- monitor the progress of these jobs, but we provide a few tools here to
- help with this.
- <br>
- ~Job Name~
- Once the job is finished, the name will be displayed as a link.
- Clicking on this link will open the finished HAR structure.
-
- ~Timestamp~
- The time when the job was submitted.
-
- ~Status~
- Olex2 tries to 'guess' the status of the job from the files it finds
- in the folder. This is a temporary measure.
-
- ~Error~
- If the HAR refinement produces an error file, a link to this file will
- appear.
-
- ~Dump~
- If HAR crashes, and link to the dump file of the HAR process will appear.
-
- ~Analysis~
- This opens the result output file of the HAR refinement. If the plotly
- extension is installed, graphs of e.g. the QQ Plot, agreement statustics
- etc. contained in these files will be generated and shown in the browser.
-   ")
- $-
-
- $+
- SetVar(HARp_Tools_help,
-   "
- These tools can be used to grow the structure before running the calculation
- or see maps after the refinement.
-   ")
- $-
-
-
 <!-- #include tool-top gui\blocks\tool-top.htm;image=#image;onclick=#onclick;1; -->
 
-<!-- #include tool-row-help gui\blocks\tool-row-help.htm;name='HAR_HEADER';help_ext=HAR Refinement;helpTxt=$GetVar(help_har_headline);1; -->
+<!-- #include tool-row-help gui\blocks\tool-row-help.htm;name='HAR_HEADER';help_ext=Hirshfeld_Atom_Refinement;1; -->
 <td><font size="+1"><b>HAR Interface</b></font></td>
 <!-- #include row_table_off gui\blocks\row_table_off.htm;1; -->
 
 
-<!-- #include tool-row-help gui\blocks\tool-row-help.htm;name='HAR_HEADER';help_ext=Basis Sets and Method;helpTxt=$GetVar(help_har_basis_method);1; -->
+<!-- #include tool-row-help gui\blocks\tool-row-help.htm;name='HAR_HEADER';help_ext=Basis_Sets_and_Method;1; -->
    <td width="20%">
        Basis
      </td>
@@ -141,7 +26,7 @@
       $-</td>
 <!-- #include row_table_off gui\blocks\row_table_off.htm;1; -->
 
-<!-- #include tool-row-help gui\blocks\tool-row-help.htm;name='HAR_HYDROGEN';help_ext=Hydrogen Treatment;helpTxt=$GetVar(help_har_hydrogen);1; -->
+<!-- #include tool-row-help gui\blocks\tool-row-help.htm;name='HAR_HYDROGEN';help_ext=Hydrogen_Treatment;1; -->
   <td width="20%">Refine Hydrogen</td>
   <td width="30%">$+
     html.Snippet("gui/snippets/input-combo", "name=tonto_har_h_refinement",
@@ -164,7 +49,7 @@
    $-</td>
 <!-- #include row_table_off gui\blocks\row_table_off.htm;1; -->
 
-<!-- #include tool-row-help gui\blocks\tool-row-help.htm;name='HAR_CLUSTER_SIGNIFICANCE';help_ext=Cluster Radius/Significance;helpTxt=$GetVar(help_har_cluster_significance);1; -->
+<!-- #include tool-row-help gui\blocks\tool-row-help.htm;name='HAR_CLUSTER_SIGNIFICANCE';help_ext=Cluster_Radius_and_Significance;1; -->
   <td width="20%" align="left">  Cluster radius  </td>
   <td width="30%">$+
     html.Snippet("gui/snippets/input-text", "name=tonto_har_cluster_radius",
@@ -181,7 +66,7 @@
 <!-- #include row_table_off gui\blocks\row_table_off.htm;1; -->
 
 
- <!-- #include tool-row-help gui\blocks\tool-row-help.htm;name='HAR_HEADER';help_ext=HAR Refinement;helpTxt=$GetVar(help_har_headline);1; -->
+ <!-- #include tool-row-help gui\blocks\tool-row-help.htm;name='HAR_HEADER';help_ext=HAR Refinement;1; -->
 
      <!--<td width="20%">-->
        <!--Convergence-->
@@ -204,9 +89,9 @@
 
  <!-- #include row_table_off gui\blocks\row_table_off.htm;1; -->
 
-<!-- #include tool-row-help gui\blocks\tool-row-help.htm;name='HAR_HEADER';help_ext=Running HAR Jobs;helpTxt=$GetVar(help_har_run_jobs);1; -->
+<!-- #include tool-row-help gui\blocks\tool-row-help.htm;name='HAR_HEADER';help_ext=Running_HAR_Jobs;1; -->
 
-      <td width="33%" >
+      <td width="25%" >
       $+
         html.Snippet("gui/snippets/input-button",
         "name=update_info",
@@ -223,8 +108,8 @@
      <td width="8%" >
      $+
        html.Snippet("gui/snippets/input-text", "name=checking_interval",
-        "value=0",
-        "onchange=SetVar(check_output_interval, html.GetValue('~name~'))")
+        "value=spy.GetParam(harp.check_output_interval)",
+        "onchange=spy.SetParam(harp.check_output_interval, html.GetValue('~name~'))")
       $-
      </td>
      <td width="10%" align='right'>
@@ -243,12 +128,12 @@
 <!-- #include row_table_off gui\blocks\row_table_off.htm;1; -->
 
 <tr name='#name' bgcolor="GetVar(HtmlTableFirstcolColour)">
-<!-- #include tool-help-first-column gui\blocks\tool-help-first-column.htm;help_ext=#help_ext;scope=#scope;helpTxt=#helpTxt;1; -->
+<!-- #include tool-help-first-column gui\blocks\tool-help-first-column.htm;help_ext=List_HAR_Jobs;1; -->
 
 <!-- #include row_table_on gui\blocks\row_table_on.htm;1; -->
 $spy.tonto.HAR.list_jobs()
 <!-- #include row_table_off gui\blocks\row_table_off.htm;1; -->
 
-<!-- #include h3-harp-extras $GetVar(HARp_plugin_path)\h3-HARp-extras.htm;gui\blocks\tool-h3-off.htm;image=h3-HARp_extras;helpTxt=$GetVar(HARp_Tools_help);onclick=;colspan=1;2; -->
+<!-- #include h3-harp-extras $GetVar(HARp_plugin_path)\h3-HARp-extras.htm;gui\blocks\tool-h3-off.htm;image=h3-HAR_Extras;onclick=;colspan=1;2; -->
 
 <!-- #include tool-footer gui\blocks\tool-footer.htm;colspan=1;1; -->

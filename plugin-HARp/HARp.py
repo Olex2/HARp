@@ -75,6 +75,7 @@ class HARp(PT):
     if not os.path.exists(self.jobs_dir):
       os.mkdir(self.jobs_dir)
     self.jobs = []
+
     if sys.platform[:3] == 'win':
       self.exe = olx.file.Which("hart.exe")
     else:
@@ -120,12 +121,16 @@ class HARp(PT):
     sorted(self.jobs, key=lambda s: s.date)
     rv = get_template('table_header', path=p_path)
 
-    status_running = "<font color='%s'><b>Running</b></font>" %OV.GetParam('gui.orange')
+#    status_running = "<font color='%s'><b>Running</b></font>" %OV.GetParam('gui.orange')
+    d['processing_gif_src'] = os.sep.join([self.p_path, OV.GetParam('harp.processing_gif')])
+    status_running  = get_template('processing_gif')%d
+
     status_completed = "<font color='%s'><b>Finished</b></font>" %OV.GetParam('gui.green')
     status_error = "<font color='%s'><b>Error!</b></font>" %OV.GetParam('gui.red')
     status_stopped = "<font color='%s'><b>Stopped</b></font>" %OV.GetParam('gui.red')
     status_nostart = "<font color='%s'><b>No Start</b></font>" %OV.GetParam('gui.red')
 
+    is_anything_running = False
     for i in range(len(self.jobs)):
       OUT_file = self.jobs[i].out_fn
 
@@ -138,6 +143,7 @@ class HARp(PT):
           status = "<a target='Open .out file' href='exec -o getvar(defeditor) %s'>%s</a>" %(self.jobs[i].out_fn, status_stopped)
       except:
         status = "<a target='Open .out file' href='exec -o getvar(defeditor) %s'>%s</a>" %(self.jobs[i].out_fn, status_running)
+        is_anything_running = True
 
       error = "--"
       if os.path.exists(self.jobs[i].error_fn):
@@ -172,14 +178,32 @@ class HARp(PT):
       d['delete'] = del_button = GI.get_action_button_html('delete', "spy.tonto.har.del_dir(%s)>>html.Update"%del_file, "Delete this HAR refinement")
 
       if os.path.exists(self.jobs[i].result_fn):
-        d['link'] = "<a href='reap \"%(job_result_filename)s\"'>" %d
+        d['link'] = '''
+<input
+  type="button"
+  name="%(job_result_name)s"
+  value="%(job_result_name)s"
+  width="100%%"
+  onclick="reap %(job_result_filename)s>>calcFourier -diff -fcf -r=0.1 -m"
+>''' %d
+
       else:
-        d['link'] = ""
+        d['processing_gif_src'] = os.sep.join([self.p_path, OV.GetParam('harp.processing_gif')])
+        d['link'] = get_template('processing_gif')%d
+        d['link'] = "<b>%s</b>" %d['job_result_name']
 
       rv += get_template('job_line')%d
     rv += "</table>"
     rv += get_template('recent_jobs', path=p_path)
+    if is_anything_running:
+      self.auto_reload()
+
     return rv
+
+  def auto_reload(self):
+    interval = OV.GetParam('harp.check_output_interval',0)
+    if interval:
+      olx.Schedule(interval, 'html.Update')
 
   def view_all(self):
     olx.Shell(self.jobs_dir)
@@ -563,7 +587,7 @@ class Job(object):
       print("A problem with pyl is encountered, aborting.")
       retur
     Popen([pyl,
-           os.path.join(olx.BaseDir(), "util", "pyUtil", "PyToolLib", "HARt-launch.py")])
+           os.path.join(p_path, "HARt-launch.py")])
 
 
 def del_dir(directory):

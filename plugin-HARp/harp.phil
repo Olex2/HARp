@@ -8,4 +8,9 @@ harp{
       .type = str
       .help = The tool before which the HARp GUI shall appear.
     }
+  check_output_interval = 0
+    .type = int
+  processing_gif = giphy.gif
+    .type = str
+    
 }
