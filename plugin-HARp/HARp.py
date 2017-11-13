@@ -138,6 +138,8 @@ class HARp(PT):
 
       try:
         if not os.path.exists(OUT_file):
+          olx.wait(500)
+
           status = "<a target='Open .out file' href='exec -o getvar(defeditor) %s'>%s</a>" %(self.jobs[i].out_fn, status_nostart)
         else:
           os.rename(OUT_file, "_.txt")
