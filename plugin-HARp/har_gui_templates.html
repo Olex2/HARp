@@ -5,7 +5,7 @@ t:recent_jobs{
 t:table_header{
 <table width='100%'>
 <tr bgcolor='$GetVar(HtmlTableBgColour)'>
-    <th width='30%' align='left'>Job name</th>
+    <th width='30%' align='center'>Job name</th>
     <th width='18%' align='center'>Time</th>
     <th width='14%' align='center'>Status</th>
     <th width='12%' align='center'>ERR</th>
@@ -16,7 +16,7 @@ t:table_header{
 
 t:job_line{
 <tr bgcolor='$GetVar(HtmlTableBgColour)'>
-    <td>
+    <td align='center'>
       %(link)s
     </td>
     <td align='center'>
@@ -42,4 +42,8 @@ t:job_line{
 
 t:processing_gif{
 <table cellspacing='1' cellpadding='0' width='100%%'><tr><td align='center'><img src='%(processing_gif_src)s'></td></tr></table>
+}
+
+t:processing_started{
+<table cellspacing='1' cellpadding='0' width='100%%'><tr><td align='center'>%(job_result_name)s</td></tr></table>
 }

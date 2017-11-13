@@ -189,7 +189,7 @@ class HARp(PT):
       else:
         d['processing_gif_src'] = os.sep.join([self.p_path, OV.GetParam('harp.processing_gif')])
         d['link'] = get_template('processing_gif')%d
-        d['link'] = "<b>%s</b>" %d['job_result_name']
+        d['link'] = get_template('processing_started')%d
 
       rv += get_template('job_line')%d
     rv += "</table>"
