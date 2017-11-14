@@ -184,15 +184,12 @@ class HARp(PT):
         if not self.jobs[i].is_copied_back:
           shutil.copy(os.path.join(self.jobs[i].full_dir, self.jobs[i].name + ".archive.cif"), os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + "_HAR.cif"))
           self.jobs[i].result_fn = os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + "_HAR.cif")
-          print self.jobs[i].result_fn
           shutil.copy(os.path.join(self.jobs[i].full_dir, self.jobs[i].name + ".archive.fcf"), os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + "_HAR.fcf"))
           shutil.copy(os.path.join(self.jobs[i].full_dir, self.jobs[i].name + ".archive.fco"), os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + "_HAR.fco"))
           shutil.copy(os.path.join(self.jobs[i].full_dir, self.jobs[i].name + ".out"), os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + "_HAR.out"))
           self.jobs[i].out_fn = os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + ".out")
-          print self.jobs[i].out_fn
           shutil.copy(os.path.join(self.jobs[i].full_dir, "stdout.fit_analysis"), os.path.join(self.jobs[i].origin_folder, "stdout.fit_analysis"))
           self.jobs[i].analysis_fn = os.path.join(self.jobs[i].origin_folder, "stdout.fit_analysis")
-          print self.jobs[i].analysis_fn
           self.jobs[i].is_copied_back = True        
 
       d['job_result_filename'] = self.jobs[i].result_fn
@@ -552,9 +549,6 @@ class Job(object):
     f_origin = os.path.join(self.origin_folder, self.name + ".cif")
     f_work = os.path.join(self.full_dir, self.name + "_IAM.cif")
     shutil.copy(f_origin,f_work)
-    #h_origin = os.path.join(self.origin_folder, self.name + ".hkl")
-    #h_work = os.path.join(self.full_dir, self.name + "_IAM.hkl")
-    #shutil.copy(h_origin,h_work)
     load_input_cif="reap " + os.path.join(self.full_dir, self.name + "_IAM.cif")
     olex.m(load_input_cif)
     autorefine = olx.GetVar("settings.tonto.HAR.autorefine", None)
@@ -663,6 +657,22 @@ class Job(object):
 def del_dir(directory):
   import shutil
   shutil.rmtree(directory)
+  
+def sample_folder(input_name):
+  import shutil
+  job_folder = os.path.join(OV.DataDir(), "HAR_samples", input_name)
+  if not os.path.exists(os.path.join(OV.DataDir(), "HAR_samples")):
+    os.mkdir(os.path.join(OV.DataDir(), "HAR_samples"))
+  sample_file = os.path.join(p_path, "samples", input_name + ".cif")
+  i = 1
+  while (os.path.exists(job_folder + "_%d"%i)):
+    i = i + 1
+  job_folder = job_folder + "_%d"%i
+  os.mkdir(job_folder)
+  shutil.copy(sample_file, job_folder)
+  load_input_cif="reap " + os.path.join(job_folder, input_name + ".cif")
+  olex.m(load_input_cif)
+  
 
 
 HARp_instance = HARp()
@@ -674,4 +684,5 @@ OV.registerFunction(HARp_instance.getBasisListStr, False, "tonto.HAR")
 OV.registerFunction(getAnalysisPlotData, False, "tonto.HAR")
 OV.registerFunction(makePlotlyGraph, False, "tonto.HAR")
 OV.registerFunction(del_dir, False, "tonto.HAR")
+OV.registerFunction(sample_folder, False, "tonto.HAR")
 print "OK."
