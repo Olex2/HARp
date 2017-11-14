@@ -45,7 +45,7 @@ from gui.images import GuiImages
 GI=GuiImages()
 
 class HARp(PT):
-
+  jobs = []
   def __init__(self):
     super(HARp, self).__init__()
     self.p_name = p_name
@@ -74,7 +74,6 @@ class HARp(PT):
     self.jobs_dir = os.path.join(olx.DataDir(), "jobs")
     if not os.path.exists(self.jobs_dir):
       os.mkdir(self.jobs_dir)
-    self.jobs = []
 
     if sys.platform[:3] == 'win':
       self.exe = olx.file.Which("hart.exe")
@@ -102,22 +101,35 @@ class HARp(PT):
     if not self.basis_list_str:
       print("Could not locate usable HARt executable")
       return
-    j = Job(self, olx.FileName())
-    j.launch()
+    self.jobs.append(Job(self, olx.FileName()))
+    i=len(self.jobs)
+    self.jobs[i-1].launch()
     olx.html.Update()
-
 
   def getBasisListStr(self):
     return self.basis_list_str
 
   def list_jobs(self):
+    import shutil
     d = {}
-    self.jobs = []
+    
     for j in os.listdir(self.jobs_dir):
       fp  = os.path.join(self.jobs_dir, j)
       jof = os.path.join(fp, "job.options")
+      #olx.Alert("Info", """checking job: %s"""%j, "O", False)
+      #check if job has an options file and append it to the jobs array
+      new = True
       if os.path.isdir(fp) and os.path.exists(jof):
-        self.jobs.append(Job(self, j))
+        for r in range(len(self.jobs)):
+          if self.jobs[r].name == j:
+            new = False
+        if new:
+          self.jobs.append(Job(self, j))
+    #cross check, whether all jobs in the list are still valid files, if yes load the job
+    for j in range(len(self.jobs)):
+      if os.path.exists(os.path.join(self.jobs_dir, self.jobs[j].name,"job.options")):
+        self.jobs[j].load()
+
     sorted(self.jobs, key=lambda s: s.date)
     rv = get_template('table_header', path=p_path)
 
@@ -150,23 +162,39 @@ class HARp(PT):
         is_anything_running = True
 
       error = "--"
-      if os.path.exists(self.jobs[i].error_fn):
-        _ = os.stat(self.jobs[i].error_fn).st_size == 0
+      if os.path.exists(os.path.join(self.jobs_dir, self.jobs[j].name,".err")):
+        _ = os.stat(os.path.join(self.jobs_dir, self.jobs[j].name,".err")).st_size == 0
         #TO DO: go through error file and look for the keyword ERROR, ignore Warnings and empty lines
         if _:
           error = "--"
         else:
           error = "<a target='Open .err file' href='exec -o getvar(defeditor) %s'>ERR</a>" %self.jobs[i].error_fn
           status = "<a target='Open .out file' href='exec -o getvar(defeditor) %s'>%s</a>" %(self.jobs[i].out_fn, status_error)
-      input_cif = os.path.join(self.jobs[i].full_dir, self.jobs[i].name + ".cif")
-      arrow = "<a target='Open input .cif file' href='reap %s'>%s</a>" %(input_cif, load_input)
+      if self.jobs[i].is_copied_back:
+        input_structure = os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + ".ins")
+      else:
+        input_structure = os.path.join(self.jobs[i].full_dir, self.jobs[i].name + ".ins")
+      arrow = "<a target='Open input .cif file' href='reap %s'>%s</a>" %(input_structure, load_input)
 
       analysis = "--"
-      if os.path.exists(self.jobs[i].analysis_fn):
+      if os.path.exists(os.path.join(self.jobs[i].full_dir, "stdout.fit_analysis")):
+        #TO DO: go through .out and check, whether it actually worked
         analysis = "<a target='Open analysis file' href='exec -o getvar(defeditor) %s>>spy.tonto.HAR.getAnalysisPlotData(%s)'>Open</a>" %(
           self.jobs[i].analysis_fn, self.jobs[i].analysis_fn)
         status = "<a target='Open .out file' href='exec -o getvar(defeditor) %s'>%s</a>" %(self.jobs[i].out_fn, status_completed)
-
+        if not self.jobs[i].is_copied_back:
+          shutil.copy(os.path.join(self.jobs[i].full_dir, self.jobs[i].name + ".archive.cif"), os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + "_HAR.cif"))
+          self.jobs[i].result_fn = os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + "_HAR.cif")
+          print self.jobs[i].result_fn
+          shutil.copy(os.path.join(self.jobs[i].full_dir, self.jobs[i].name + ".archive.fcf"), os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + "_HAR.fcf"))
+          shutil.copy(os.path.join(self.jobs[i].full_dir, self.jobs[i].name + ".archive.fco"), os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + "_HAR.fco"))
+          shutil.copy(os.path.join(self.jobs[i].full_dir, self.jobs[i].name + ".out"), os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + "_HAR.out"))
+          self.jobs[i].out_fn = os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + ".out")
+          print self.jobs[i].out_fn
+          shutil.copy(os.path.join(self.jobs[i].full_dir, "stdout.fit_analysis"), os.path.join(self.jobs[i].origin_folder, "stdout.fit_analysis"))
+          self.jobs[i].analysis_fn = os.path.join(self.jobs[i].origin_folder, "stdout.fit_analysis")
+          print self.jobs[i].analysis_fn
+          self.jobs[i].is_copied_back = True        
 
       d['job_result_filename'] = self.jobs[i].result_fn
       d['job_result_name'] = self.jobs[i].name
@@ -423,6 +451,16 @@ def makePlotlyGraph(d):
 
 
 class Job(object):
+  origin_folder = " "
+  is_copied_back = False
+  date = None
+  out_fn = None
+  error_fn = None
+  result_fn = None
+  analysis_fn = None
+  completed = None
+  full_dir = None
+  
   def __init__(self, parent, name):
     self.parent = parent
     self.status = 0
@@ -445,7 +483,8 @@ class Job(object):
       for k, v in HARp_instance.options.iteritems():
         val = olx.GetVar(k, None)
         if val is not None:
-          f.write("%s: %s\n" %(k, val))
+          f.write("%s:%s\n" %(k, val))
+      f.write("origin_folder:%s" %self.origin_folder)
 
   def load(self):
     options_fn = os.path.join(self.full_dir, "job.options")
@@ -457,25 +496,26 @@ class Job(object):
             l = l.strip()
             if not l or ':' not in l: continue
             toks = l.split(':')
-            olx.SetVar(toks[0], toks[1])
+            if "origin_folder" != toks[0]: 
+              olx.SetVar(toks[0], toks[1])
+            else:
+              if sys.platform[:3] == 'win':
+                self.origin_folder = toks[1] + ":" + toks[2]
+              else:
+                self.origin_folder = toks[1]
         return True
       except:
         return False
     return False
 
   def launch(self):
-    autorefine = olx.GetVar("settings.tonto.HAR.autorefine", None)
-    if autorefine == 'true':
-      olex.m("refine")
-    if olx.xf.latt.IsGrown() == 'true':
-      if olx.Alert("Please confirm",\
-    """This is a grown structure. If you have created a cluster of molecules, make sure
-    that the structure you see on the screen obeys the crystallographic symmetry.
-    If this is not the case, the HAR will not work properly. Continue?""", "YN", False) == 'N':
-        return
-    elif olx.xf.au.GetZprime() != '1':
-      olx.Grow()
-      olex.m("grow -w")
+    import shutil
+    #check whether ACTA was set, so the cif contains all necessary information to be copied back and forth
+    #if not olx.Ins('ACTA'):
+    #  olex.m('acta')
+    #  olex.m('refine')
+    
+    # Check if job folder already exists and (if needed) make the backup folders    
     if os.path.exists(self.full_dir):
       self.backup = os.path.join(self.full_dir, "backup")
       i = 1
@@ -483,14 +523,13 @@ class Job(object):
         i = i + 1
       self.backup = self.backup + "_%d"%i
       os.mkdir(self.backup)
-      import shutil
       try:
-        files = (file for file in os.listdir(os.path.join(self.full_dir))
+        files = (file for file in os.listdir(self.full_dir)
                  if os.path.isfile(os.path.join(self.full_dir, file)))
         for f in files:
           f_work = os.path.join(self.full_dir,f)
-          f_dist = os.path.join(self.backup,f)
-          shutil.move(f_work,f_dist)
+          f_dest = os.path.join(self.backup,f)
+          shutil.move(f_work,f_dest)
       except:
         pass
     try:
@@ -505,7 +544,33 @@ class Job(object):
       except:
         time.sleep(0.1)
         tries += 1
-        pass
+        pass    
+      
+    time.sleep(0.1)
+    self.origin_folder = OV.FilePath()
+	
+    # Get the original .cif file from the original directory and prepare it for HAR (autorefine, grow etc.)    
+    f_origin = os.path.join(self.origin_folder, self.name + ".cif")
+    f_work = os.path.join(self.full_dir, self.name + "_IAM.cif")
+    shutil.copy(f_origin,f_work)
+    #h_origin = os.path.join(self.origin_folder, self.name + ".hkl")
+    #h_work = os.path.join(self.full_dir, self.name + "_IAM.hkl")
+    #shutil.copy(h_origin,h_work)
+    load_input_cif="reap " + os.path.join(self.full_dir, self.name + "_IAM.cif")
+    olex.m(load_input_cif)
+    autorefine = olx.GetVar("settings.tonto.HAR.autorefine", None)
+    if autorefine == 'true':
+      olex.m("refine")
+    if olx.xf.latt.IsGrown() == 'true':
+      if olx.Alert("Please confirm",\
+    """This is a grown structure. If you have created a cluster of molecules, make sure
+    that the structure you see on the screen obeys the crystallographic symmetry.
+    If this is not the case, the HAR will not work properly. Continue?""", "YN", False) == 'N':
+        return
+    elif olx.xf.au.GetZprime() != '1':
+      olx.Grow()
+      olex.m("grow -w")
+    
 
     model_file_name = os.path.join(self.full_dir, self.name) + ".cif"
     olx.Kill("$Q")
@@ -579,6 +644,11 @@ class Job(object):
           args.append("f")
         pass
 
+    self.result_fn = os.path.join(self.full_dir, self.name) + ".archive.cif"
+    self.error_fn = os.path.join(self.full_dir, self.name) + ".err"
+    self.out_fn = os.path.join(self.full_dir, self.name) + ".out"
+    self.dump_fn = os.path.join(self.full_dir, "hart.exe.stackdump")
+    self.analysis_fn = os.path.join(self.full_dir, "stdout.fit_analysis")    
     os.environ['hart_cmd'] = '+&-'.join(args)
     os.environ['hart_file'] = self.name
     os.environ['hart_dir'] = self.full_dir
@@ -586,7 +656,7 @@ class Job(object):
     pyl = OV.getPYLPath()
     if not pyl:
       print("A problem with pyl is encountered, aborting.")
-      retur
+      return
     Popen([pyl,
            os.path.join(p_path, "HARt-launch.py")])
 
