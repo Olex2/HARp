@@ -45,7 +45,6 @@ from gui.images import GuiImages
 GI=GuiImages()
 
 class HARp(PT):
-  jobs = []
   def __init__(self):
     super(HARp, self).__init__()
     self.p_name = p_name
@@ -55,6 +54,7 @@ class HARp(PT):
     self.p_img = p_img
     self.deal_with_phil(operation='read')
     self.print_version_date()
+    self.jobs = []
     if not from_outside:
       self.setup_gui()
     # END Generated =======================================
@@ -101,9 +101,8 @@ class HARp(PT):
     if not self.basis_list_str:
       print("Could not locate usable HARt executable")
       return
-    self.jobs.append(Job(self, olx.FileName()))
-    i=len(self.jobs)
-    self.jobs[i-1].launch()
+    job = Job(self, olx.FileName())
+    job.launch()
     olx.html.Update()
 
   def getBasisListStr(self):
@@ -112,11 +111,11 @@ class HARp(PT):
   def list_jobs(self):
     import shutil
     d = {}
+    self.jobs = []
     
     for j in os.listdir(self.jobs_dir):
       fp  = os.path.join(self.jobs_dir, j)
       jof = os.path.join(fp, "job.options")
-      #olx.Alert("Info", """checking job: %s"""%j, "O", False)
       #check if job has an options file and append it to the jobs array
       new = True
       if os.path.isdir(fp) and os.path.exists(jof):
@@ -171,9 +170,9 @@ class HARp(PT):
           error = "<a target='Open .err file' href='exec -o getvar(defeditor) %s'>ERR</a>" %self.jobs[i].error_fn
           status = "<a target='Open .out file' href='exec -o getvar(defeditor) %s'>%s</a>" %(self.jobs[i].out_fn, status_error)
       if self.jobs[i].is_copied_back:
-        input_structure = os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + ".ins")
+        input_structure = os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + "_IAM.cif")
       else:
-        input_structure = os.path.join(self.jobs[i].full_dir, self.jobs[i].name + ".ins")
+        input_structure = os.path.join(self.jobs[i].full_dir, self.jobs[i].name + ".cif")
       arrow = "<a target='Open input .cif file' href='reap %s'>%s</a>" %(input_structure, load_input)
 
       analysis = "--"
@@ -203,7 +202,7 @@ class HARp(PT):
       d['error'] = error
       d['arrow'] = arrow
       d['analysis'] = analysis
-      del_file = os.path.dirname(d['job_result_filename'])
+      del_file = self.jobs[i].full_dir
       d['delete'] = del_button = GI.get_action_button_html('delete', "spy.tonto.har.del_dir(%s)>>html.Update"%del_file, "Delete this HAR refinement")
 
       if os.path.exists(self.jobs[i].result_fn):
