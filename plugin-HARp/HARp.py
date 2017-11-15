@@ -149,7 +149,7 @@ class HARp(PT):
 
       try:
         if not os.path.exists(OUT_file):
-          olx.wait(500)
+          olx.wait(500) #Why is this here?
 
           status = "<a target='Open .out file' href='exec -o getvar(defeditor) %s'>%s</a>" %(self.jobs[i].out_fn, status_nostart)
         else:
@@ -162,8 +162,10 @@ class HARp(PT):
 
       error = "--"
       if os.path.exists(os.path.join(self.jobs_dir, self.jobs[j].name,".err")):
-        _ = os.stat(os.path.join(self.jobs_dir, self.jobs[j].name,".err")).st_size == 0
-        #TO DO: go through error file and look for the keyword ERROR, ignore Warnings and empty lines
+        if 'Error in' in open(os.path.join(self.jobs_dir, self.jobs[j].name,".err")).read():
+          _ = False
+        else:
+          _ = True
         if _:
           error = "--"
         else:
@@ -180,17 +182,24 @@ class HARp(PT):
         #TO DO: go through .out and check, whether it actually worked
         analysis = "<a target='Open analysis file' href='exec -o getvar(defeditor) %s>>spy.tonto.HAR.getAnalysisPlotData(%s)'>Open</a>" %(
           self.jobs[i].analysis_fn, self.jobs[i].analysis_fn)
-        status = "<a target='Open .out file' href='exec -o getvar(defeditor) %s'>%s</a>" %(self.jobs[i].out_fn, status_completed)
-        if not self.jobs[i].is_copied_back:
-          shutil.copy(os.path.join(self.jobs[i].full_dir, self.jobs[i].name + ".archive.cif"), os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + "_HAR.cif"))
-          self.jobs[i].result_fn = os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + "_HAR.cif")
-          shutil.copy(os.path.join(self.jobs[i].full_dir, self.jobs[i].name + ".archive.fcf"), os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + "_HAR.fcf"))
-          shutil.copy(os.path.join(self.jobs[i].full_dir, self.jobs[i].name + ".archive.fco"), os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + "_HAR.fco"))
-          shutil.copy(os.path.join(self.jobs[i].full_dir, self.jobs[i].name + ".out"), os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + "_HAR.out"))
-          self.jobs[i].out_fn = os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + ".out")
-          shutil.copy(os.path.join(self.jobs[i].full_dir, "stdout.fit_analysis"), os.path.join(self.jobs[i].origin_folder, "stdout.fit_analysis"))
-          self.jobs[i].analysis_fn = os.path.join(self.jobs[i].origin_folder, "stdout.fit_analysis")
-          self.jobs[i].is_copied_back = True        
+        if 'WARNING: refinement stopped: chi2 has increased.' in open(self.jobs[i].out_fn).read():
+          error = "<a target='Open .err file' href='exec -o getvar(defeditor) %s'>Chi2</a>" %self.jobs[i].error_fn
+          status = "<a target='Open .out file' href='exec -o getvar(defeditor) %s'>%s</a>" %(self.jobs[i].out_fn, status_error)
+        elif 'Structure refinement converged.' in open(self.jobs[i].out_fn).read():
+          status = "<a target='Open .out file' href='exec -o getvar(defeditor) %s'>%s</a>" %(self.jobs[i].out_fn, status_completed)
+          if not self.jobs[i].is_copied_back:
+            shutil.copy(os.path.join(self.jobs[i].full_dir, self.jobs[i].name + ".archive.cif"), os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + "_HAR.cif"))
+            self.jobs[i].result_fn = os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + "_HAR.cif")
+            shutil.copy(os.path.join(self.jobs[i].full_dir, self.jobs[i].name + ".archive.fcf"), os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + "_HAR.fcf"))
+            shutil.copy(os.path.join(self.jobs[i].full_dir, self.jobs[i].name + ".archive.fco"), os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + "_HAR.fco"))
+            shutil.copy(os.path.join(self.jobs[i].full_dir, self.jobs[i].name + ".out"), os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + "_HAR.out"))
+            self.jobs[i].out_fn = os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + ".out")
+            shutil.copy(os.path.join(self.jobs[i].full_dir, "stdout.fit_analysis"), os.path.join(self.jobs[i].origin_folder, "stdout.fit_analysis"))
+            self.jobs[i].analysis_fn = os.path.join(self.jobs[i].origin_folder, "stdout.fit_analysis")
+            self.jobs[i].is_copied_back = True  
+        else:
+          error = "<a target='Open .err file' href='exec -o getvar(defeditor) %s'>Conv</a>" %self.jobs[i].error_fn
+          status = "<a target='Open .out file' href='exec -o getvar(defeditor) %s'>%s</a>" %(self.jobs[i].out_fn, status_stopped)
 
       d['job_result_filename'] = self.jobs[i].result_fn
       d['job_result_name'] = self.jobs[i].name
