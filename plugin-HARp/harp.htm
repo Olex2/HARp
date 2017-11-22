@@ -137,40 +137,39 @@
 
 <!-- #include tool-row-help gui\blocks\tool-row-help.htm;name='HAR_HEADER';help_ext=Running_HAR_Jobs;1; -->
 
-      <td width="20%" >
       $+
-        html.Snippet("gui/snippets/input-button",
+        html.Snippet(GetVar(default_link),
         "name=update_info",
         "value=Check Output",
-        "onclick=html.Update"
+        "onclick=html.Update",
+        "td1=<td width='21%'>",
         )
       $-
-      </td>
 
-     <td width="20%" align='right'>
-       Check out every
+     <td width="8%" align='right'>
+      every
      </td>
 
-     <td width="10%" align='center'>
+     <td width="8%" align='center'>
      $+
-       html.Snippet("gui/snippets/input-text", "name=checking_interval",
-        "value=spy.GetParam(harp.check_output_interval)",
-        "onchange=spy.SetParam(harp.check_output_interval, html.GetValue('~name~'))")
+       html.Snippet("gui/snippets/input-text",
+       "name=checking_interval",
+       "value=spy.GetParam(harp.check_output_interval)",
+       "onleave=spy.SetParam(harp.check_output_interval, html.GetValue('~name~'))>>html.Update"
+       )
       $-
      </td>
      <td width="27%" align='left'>
        seconds
      </td>
 
-      <td width="23%" >
       $+
-        html.Snippet("gui/snippets/input-button",
+        html.Snippet(GetVar(default_link),
         "name=tonto_har_run",
-        "value=Launch",
+        "value=Start HAR",
         "onclick=spy.tonto.HAR.launch()"
         )
      $-
-     </td>
 <!-- #include row_table_off gui\blocks\row_table_off.htm;1; -->
 
 <tr name='#name' bgcolor="GetVar(HtmlTableFirstcolColour)">

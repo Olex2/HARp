@@ -76,10 +76,19 @@ class HARp(PT):
     if not os.path.exists(self.jobs_dir):
       os.mkdir(self.jobs_dir)
 
+    self.exe = None
     if sys.platform[:3] == 'win':
-      self.exe = olx.file.Which("hart.exe")
+      _ = os.sep.join([self.p_path, "hart.exe"])
+      if os.path.exists(_):
+        self.exe = _
+      else:
+        self.exe = olx.file.Which("hart.exe")
     else:
-      self.exe = olx.file.Which("hart")
+      _ = os.sep.join([self.p_path, "hart"])
+      if os.path.exists(_):
+        self.exe = _
+      else:
+        self.exe = olx.file.Which("hart.exe")
     if os.path.exists(self.exe):
       self.basis_dir = os.path.join(os.path.split(self.exe)[0], "basis_sets").replace("\\", "/")
       if os.path.exists(self.basis_dir):
@@ -113,7 +122,7 @@ class HARp(PT):
     import shutil
     d = {}
     self.jobs = []
-    
+
     for j in os.listdir(self.jobs_dir):
       fp  = os.path.join(self.jobs_dir, j)
       jof = os.path.join(fp, "job.options")
@@ -201,7 +210,7 @@ class HARp(PT):
             self.jobs[i].out_fn = os.path.join(self.jobs[i].origin_folder, self.jobs[i].name + ".out")
             shutil.copy(os.path.join(self.jobs[i].full_dir, "stdout.fit_analysis"), os.path.join(self.jobs[i].origin_folder, "stdout.fit_analysis"))
             self.jobs[i].analysis_fn = os.path.join(self.jobs[i].origin_folder, "stdout.fit_analysis")
-            self.jobs[i].is_copied_back = True  
+            self.jobs[i].is_copied_back = True
         else:
           error = "<a target='Open .err file' href='exec -o getvar(defeditor) %s'>Conv</a>" %self.jobs[i].error_fn
           status = "<a target='Open .out file' href='exec -o getvar(defeditor) %s'>%s</a>" %(self.jobs[i].out_fn, status_stopped)
@@ -470,7 +479,7 @@ class Job(object):
   analysis_fn = None
   completed = None
   full_dir = None
-  
+
   def __init__(self, parent, name):
     self.parent = parent
     self.status = 0
@@ -506,7 +515,7 @@ class Job(object):
             l = l.strip()
             if not l or ':' not in l: continue
             toks = l.split(':')
-            if "origin_folder" != toks[0]: 
+            if "origin_folder" != toks[0]:
               olx.SetVar(toks[0], toks[1])
             else:
               if sys.platform[:3] == 'win':
@@ -517,7 +526,7 @@ class Job(object):
       except:
         return False
     return False
-  
+
   def load_origin(self):
     options_fn = os.path.join(self.full_dir, "job.options")
     if os.path.exists(options_fn):
@@ -528,7 +537,7 @@ class Job(object):
             l = l.strip()
             if not l or ':' not in l: continue
             toks = l.split(':')
-            if "origin_folder" == toks[0]: 
+            if "origin_folder" == toks[0]:
               if sys.platform[:3] == 'win':
                 self.origin_folder = toks[1] + ":" + toks[2]
               else:
@@ -537,13 +546,13 @@ class Job(object):
         return True
       except:
         return False
-    return False  
+    return False
 
   def launch(self):
     import shutil
     #check whether ACTA was set, so the cif contains all necessary information to be copied back and forth
-        
-    # Check if job folder already exists and (if needed) make the backup folders    
+
+    # Check if job folder already exists and (if needed) make the backup folders
     if os.path.exists(self.full_dir):
       self.backup = os.path.join(self.full_dir, "backup")
       i = 1
@@ -572,32 +581,32 @@ class Job(object):
       except:
         time.sleep(0.1)
         tries += 1
-        pass    
-      
+        pass
+
     time.sleep(0.1)
     self.origin_folder = OV.FilePath()
-    
+
 #    if not olx.Ins('ACTA'):
 #      olex.m('addins ACTA')
-#      olex.m('refine')    
+#      olex.m('refine')
     autogrow = olx.GetVar("settings.tonto.HAR.autogrow", None)
     if olx.xf.latt.IsGrown() == 'true':
       if olx.Alert("Please confirm",\
-"""This is a grown structure. If you have created a cluster of molecules, make sure 
-that the structure you see on the screen obeys the crystallographic symmetry. 
+"""This is a grown structure. If you have created a cluster of molecules, make sure
+that the structure you see on the screen obeys the crystallographic symmetry.
 If this is not the case, the HAR will not work properly. Continue?""", "YN", False) == 'N':
-        return      
+        return
     elif olx.xf.au.GetZprime() != '1' and autogrow == 'true':
       olx.Grow()
-      olex.m("grow -w")       
+      olex.m("grow -w")
     elif olx.xf.au.GetZprime() < '1' and autogrow == 'false':
       if olx.Alert("Attention!",\
 """This appears to be a z' < 1 structure.
 Autogrow is disabled and the structure is not grown.
 
-This is HIGHLY unrecomendet! 
+This is HIGHLY unrecomendet!
 
-Please complete the molecule in a way it forms a full chemical entity. 
+Please complete the molecule in a way it forms a full chemical entity.
 Benzene would need to contain one complete 6-membered ring to work,
 otherwise the wavefunction can not be calculated properly!
 Are you sure you want to continue with this structure?""", "YN", False) == 'N':
@@ -681,7 +690,7 @@ Are you sure you want to continue with this structure?""", "YN", False) == 'N':
     self.error_fn = os.path.join(self.full_dir, self.name) + ".err"
     self.out_fn = os.path.join(self.full_dir, self.name) + ".out"
     self.dump_fn = os.path.join(self.full_dir, "hart.exe.stackdump")
-    self.analysis_fn = os.path.join(self.full_dir, "stdout.fit_analysis")    
+    self.analysis_fn = os.path.join(self.full_dir, "stdout.fit_analysis")
     os.environ['hart_cmd'] = '+&-'.join(args)
     os.environ['hart_file'] = self.name
     os.environ['hart_dir'] = self.full_dir
@@ -697,7 +706,7 @@ Are you sure you want to continue with this structure?""", "YN", False) == 'N':
 def del_dir(directory):
   import shutil
   shutil.rmtree(directory)
-  
+
 def sample_folder(input_name):
   import shutil
   job_folder = os.path.join(OV.DataDir(), "HAR_samples", input_name)
@@ -712,7 +721,7 @@ def sample_folder(input_name):
   shutil.copy(sample_file, job_folder)
   load_input_cif="reap " + os.path.join(job_folder, input_name + ".cif")
   olex.m(load_input_cif)
-  
+
 
 
 HARp_instance = HARp()
