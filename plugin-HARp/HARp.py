@@ -72,7 +72,8 @@ class HARp(PT):
     }
     self.options = options
 
-    self.jobs_dir = os.path.join(olx.DataDir(), "HAR_jobs")
+    self.jobs_dir = OV.GetParam('%s.har_job_path' %self.p_scope)
+   # self.jobs_dir = os.path.join(olx.DataDir(), "HAR_jobs")
     if not os.path.exists(self.jobs_dir):
       os.mkdir(self.jobs_dir)
 
