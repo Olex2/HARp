@@ -733,7 +733,7 @@ def sample_folder(input_name):
   job_folder = job_folder + "_%d"%i
   os.mkdir(job_folder)
   shutil.copy(sample_file, job_folder)
-  load_input_cif="reap " + os.path.join(job_folder, input_name + ".cif")
+  load_input_cif="reap '%s.cif'" %os.path.join(job_folder, input_name)
   olex.m(load_input_cif)
 
 
