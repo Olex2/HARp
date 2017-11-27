@@ -699,8 +699,6 @@ Are you sure you want to continue with this structure?""", "YN", False) == 'N':
         elif val == "not":
           args.append("-h-adps")
           args.append("f")
-          args.append("-h-iso")
-          args.append("f")
           args.append("-h-pos")
           args.append("f")
         pass
