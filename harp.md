@@ -43,7 +43,7 @@ Enable/Disable a final cycle of IAM refinement prior to the start of HARt. This 
 Defines a radius around the asymmetric unit, in which implicit point charges and dipoles are used to mimmic the crystal effect. Minimal HAR is 0, reasonable values go to 8 Angstrom.
 
 ## Complete Cluster
-In a normal case liek a molecular structure this will make sure the cluste charges which are generated resemble the full molecule and leveled charges. If you want to refine a network compound (like a salt or bridged ions) where molecular boundaries are difficult to detect you might encounter errors. If that is the case try to turn this off.
+In a normal case like a molecular structure this will make sure the cluster charges which are generated resemble the full molecule and leveled charges. If you want to refine a network compound (like a salt or bridged ions) where molecular boundaries are difficult to detect you might encounter errors. If that is the case try to turn this off.
 
 ## F/sig threshold
 Defines the significance criteria for data to be used in the refinement. Default value is 3, should not be too big.
