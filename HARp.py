@@ -617,6 +617,7 @@ Make sure the cluster/moelcule is neutral and fully completed.
 Continue?""", "YN", False) == 'N':
         return
     elif olx.xf.au.GetZprime() != '1' and autogrow == 'true':
+      olex.m("kill $q")
       olx.Grow()
       olex.m("grow -w")
     elif olx.xf.au.GetZprime() < '1' and autogrow == 'false':
